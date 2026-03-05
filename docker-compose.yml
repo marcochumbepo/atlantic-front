@@ -1,0 +1,65 @@
+version: '3.9'
+
+services:
+  # Servicio del Frontend React
+  atlantic-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: atlantic-frontend
+    ports:
+      - "80:80"
+    environment:
+      # URL del backend - cambiar según ambiente
+      BACKEND_URL: "http://localhost:5000"
+      NODE_ENV: "production"
+    restart: unless-stopped
+    networks:
+      - atlantic-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    labels:
+      - "com.atlantic.app=frontend"
+      - "com.atlantic.version=1.0.0"
+
+  # Servicio del Backend .NET (opcional - para desarrollo)
+  # atlantic-backend:
+  #   build:
+  #     context: ../backend
+  #     dockerfile: Dockerfile
+  #   container_name: atlantic-backend
+  #   ports:
+  #     - "5000:5000"
+  #   environment:
+  #     ASPNETCORE_URLS: "http://0.0.0.0:5000"
+  #     ASPNETCORE_ENVIRONMENT: "Production"
+  #   restart: unless-stopped
+  #   networks:
+  #     - atlantic-network
+  #   depends_on:
+  #     - atlantic-database
+
+  # Base de datos (opcional)
+  # atlantic-database:
+  #   image: mcr.microsoft.com/mssql/server:2019-latest
+  #   container_name: atlantic-database
+  #   environment:
+  #     SA_PASSWORD: "YourPassword123!"
+  #     ACCEPT_EULA: "Y"
+  #   ports:
+  #     - "1433:1433"
+  #   restart: unless-stopped
+  #   networks:
+  #     - atlantic-network
+
+networks:
+  atlantic-network:
+    driver: bridge
+
+# Volúmenes (si es necesario)
+# volumes:
+#   database-data:
